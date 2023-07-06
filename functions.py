@@ -102,7 +102,7 @@ def get_upload_client():
 
 
 # Create the transfer process
-def transfer(source, destination, source_bucket, destination_bucket):
+def transfer(source, destination, source_bucket, destination_bucket, delete_source_files):
 
     # Temp location to store files for transfer
     cache = "/tmp/"
@@ -129,5 +129,6 @@ def transfer(source, destination, source_bucket, destination_bucket):
             progress_download(source,source_bucket,file,file_path)
             print("Uploading: {}".format(file))
             destination.upload_file((cache+file), destination_bucket, file)
-            delete_file(source, bucket['Name'], file)
+            if delete_source_files:
+                delete_file(source, bucket['Name'], file)
             os.remove(cache+file)

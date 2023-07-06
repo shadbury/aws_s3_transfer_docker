@@ -35,6 +35,15 @@ if __name__ == "__main__":
         required=True,
     )
 
+    parser.add_argument(
+        "-del",
+        "--delete_files",
+        help="Delete Files, If set to true, the files in the source bucket will be deleted after they have successfully been uploaded to new bucket",
+        required=False,
+        default=False
+    )
+
+
 
 
     # initialize variables

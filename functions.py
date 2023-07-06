@@ -10,44 +10,39 @@ def delete_file(client, bucket, key):
         Key=key
 )
 
-def progress_upload():
-    ## TODO
-    
-    # Get the object
-    response = source.head_object(Bucket=source_bucket, Key=file)
-    
-    # Get the size of the file
-    size = response['ContentLength']
+def progress_upload(source,cache,file,destination_bucket):
 
-    #initialize the progress bar
-    up_progress = progressbar.progressbar.ProgressBar(maxval=size)
-    up_progress.start()
 
-    # Update progress
-    def upload_progress(chunk):
-        up_progress.update(up_progress.currval + chunk)
+    #Progress bar
+    def updateProgressBar(size_uploaded, size_file, size_bar=50):
+        perc_uploaded = round(size_uploaded / size_file * 100)
+        progress = round(perc_uploaded / 100 * size_bar)
 
-    try:
-        # Start the download
-        source.download_file(source_bucket, file, file_path, 
-                             Callback=upload_progress)
+        status_bar = f"-{'▒' * progress}{' ' * (size_bar - progress)}-"
+        status_count = f"[{size_uploaded}/{size_file}MB]"
+
+        print(f"\r{status_bar} | {status_count} | {perc_uploaded}%", end='')
+
+
+        file_name = file
+        file_stats = os.stat(file_name)
+        print(file_stats)
+        print(f'File Size in Bytes is {file_stats.st_size}')
+        print(f'File Size in MegaBytes is {file_stats.st_size / (1024 * 1024)}')
         
-        # When download is finished, update progress
-        up_progress.finish()
-        print("Download Successful")
-        return True
-    
-    # If the file is not found, print an error
-    except FileNotFoundError:
         
-        print("The file was not found")
-        return False
-    
-    # If credentials arent setup, print an error
-    except NoCredentialsError:
+        
+        file_size = file_stats.st_size / (1024 * 1024)
+        uploaded_size = 0
+        while uploaded_size < file_size:
+            uploaded_size += 1
 
-        print("Credentials not available")
-        return False
+            updateProgressBar(uploaded_size, file_size)
+
+        print("\nDone!")
+
+    source.upload_file((cache+file), destination_bucket, file)
+
 
 def progress_download(source,source_bucket,file,file_path):
     
@@ -128,7 +123,7 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
             file_path = "{}{}".format(cache,file)
             progress_download(source,source_bucket,file,file_path)
             print("Uploading: {}".format(file))
-            destination.upload_file((cache+file), destination_bucket, file)
+            progress_upload(destination, cache, destination_bucket)
             if delete_source_files:
                 delete_file(source, bucket['Name'], file)
             os.remove(cache+file)

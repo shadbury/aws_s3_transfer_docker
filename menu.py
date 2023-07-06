@@ -53,7 +53,8 @@ if __name__ == "__main__":
     destination = args.destination_profile
     source_bucket = args.source_bucket
     destination_bucket = args.destination_bucket
+    delete_files = args.delete_files
 
 
     # Start the app when all params are available
-    functions.transfer(source,destination,source_bucket,destination_bucket)
+    functions.transfer(source,destination,source_bucket,destination_bucket,delete_files)

@@ -130,7 +130,9 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
 
             # if the delete source files option was true. delete the file from the source s3 bucket
             if delete_source_files:
+                print("deleting file from source bucket: {}".format(file))
                 delete_file(source, bucket['Name'], file)
 
             # remove files from cache after upload is complete
+            print("deleting file from cache: {}".format(file))
             os.remove(cache+file)

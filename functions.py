@@ -80,7 +80,7 @@ def transfer(source, destination, source_bucket, destination_bucket):
         if file not in cache:
             print("Downloading: {}".format(file))
             file_path = "{}{}".format(cache,file)
-            print("Uploading: {}".format(file))
             progress_download(source,source_bucket,file,file_path)
+            print("Uploading: {}".format(file))
             destination.upload_file((cache+file), destination_bucket, file)
             os.remove(cache+file)

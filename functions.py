@@ -14,7 +14,7 @@ def delete_file(client, bucket, key):
 
 
 # Progress bar or file upload
-def progress_upload(source,file_path,destination_bucket):
+def progress_upload(destination,file_path,destination_bucket):
 
     # get metadata infomation about current file
     statinfo = os.stat(file_path)
@@ -28,7 +28,7 @@ def progress_upload(source,file_path,destination_bucket):
         up_progress.update(up_progress.currval + chunk)
 
     # updoad file
-    source.upload_file(file_path, destination_bucket, file_path, Callback=upload_progress)
+    destination.upload_file(file_path, destination_bucket, file_path, Callback=upload_progress)
 
     # upload finished
     up_progress.finish()

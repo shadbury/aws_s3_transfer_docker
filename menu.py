@@ -28,9 +28,29 @@ class Window:
         print("placeholder")
     
 
-
-
 root = tk.Tk()
 root.geometry('300x200')
 window = Window(root)
+T = tk.Text(root, bg="White", fg="grey")
+l = tk.Label(root, text="go fuck yourself")
+l.config(font =("Courier", 14))
+ 
+Fact = """A man can be arrested in
+Italy for wearing a skirt in public."""
+ 
+# Create button for next text.
+b1 = tk.Button(root, text = "Next", )
+ 
+# Create an Exit button.
+b2 = tk.Button(root, text = "Exit",
+            command = root.destroy)
+ 
+l.pack()
+T.pack()
+b1.pack()
+b2.pack()
+ 
+# Insert The Fact.
+T.insert(tk.END, Fact)
+T.pack()
 root.mainloop()

@@ -4,27 +4,33 @@ import progressbar
 from botocore.exceptions import NoCredentialsError
 
 
+# Delete file function
+
 def delete_file(client, bucket, key):
     client.delete_object(
         Bucket=bucket,
         Key=key
 )
 
-def progress_upload(source,file,file_path,destination_bucket):
-    bucket_name = destination_bucket
-    file_name = file_path
 
+# Progress bar or file upload
+def progress_upload(source,file_path,destination_bucket):
+
+    # get metadata infomation about current file
     statinfo = os.stat(file_path)
 
+    # initialize progress bad
     up_progress = progressbar.progressbar.ProgressBar(maxval=statinfo.st_size)
-
     up_progress.start()
 
+    # Update progress bad
     def upload_progress(chunk):
         up_progress.update(up_progress.currval + chunk)
 
-    source.upload_file(file_name, bucket_name, file_path, Callback=upload_progress)
+    # updoad file
+    source.upload_file(file_path, destination_bucket, file_path, Callback=upload_progress)
 
+    # upload finished
     up_progress.finish()
 
 
@@ -105,11 +111,26 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
 
         # If the current file name doesn't exist, proceed.
         if file not in cache:
-            print("Downloading: {}".format(file))
+
+            # get the file path
             file_path = "{}{}".format(cache,file)
+
+
+            # display to use the the application is about to attempt to download an object from the source s3 bucket
+            print("Downloading: {}".format(file))
+
+            # start the download process
             progress_download(source,source_bucket,file,file_path)
+
+            # display to use the the application is about to attempt to upload an object to the destination s3 bucket
             print("Uploading: {}".format(file))
-            progress_upload(destination, file, file_path, destination_bucket)
+
+            # start the upload process
+            progress_upload(destination, file_path, destination_bucket)
+
+            # if the delete source files option was true. delete the file from the source s3 bucket
             if delete_source_files:
                 delete_file(source, bucket['Name'], file)
+
+            # remove files from cache after upload is complete
             os.remove(cache+file)

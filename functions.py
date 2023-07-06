@@ -78,7 +78,7 @@ def progress_download(source,source_bucket,file,file_path):
 
 # Get the boto3 s3 client for the content to be downloaded
 def get_download_client(source):
-    source = boto3.Session(profile_name='wellteqnib-prod')
+    source = boto3.Session(profile_name=source)
     return source.client('s3')
 
 

@@ -29,13 +29,15 @@ Once this is setup, you will need the following
 
 `Destination Bucket` : The destination bucket that the date will be transferred to
 
+`Delete Files` : If set to ```True``` the files from the source bucket will be deleted. default is ```False```
+
 Once you have these, you can run the following.
 
-```s3_account_transfer <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name>```
+```s3_account_transfer <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name> -del <True|False>```
 
 or
 
-```s3_account_transfer --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name>```
+```s3_account_transfer --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name> --delete_files <True|False>```
 
 
 

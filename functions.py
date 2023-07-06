@@ -123,7 +123,7 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
             file_path = "{}{}".format(cache,file)
             progress_download(source,source_bucket,file,file_path)
             print("Uploading: {}".format(file))
-            progress_upload(destination, cache, destination_bucket)
+            progress_upload(destination, cache, file, destination_bucket)
             if delete_source_files:
                 delete_file(source, bucket['Name'], file)
             os.remove(cache+file)

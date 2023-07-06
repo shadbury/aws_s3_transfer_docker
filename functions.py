@@ -3,6 +3,52 @@ import os
 import progressbar
 from botocore.exceptions import NoCredentialsError
 
+
+def delete_file(client, bucket, key):
+    client.delete_object(
+        Bucket=bucket,
+        Key=key
+)
+
+def progress_upload():
+    ## TODO
+    
+    # Get the object
+    response = source.head_object(Bucket=source_bucket, Key=file)
+    
+    # Get the size of the file
+    size = response['ContentLength']
+
+    #initialize the progress bar
+    up_progress = progressbar.progressbar.ProgressBar(maxval=size)
+    up_progress.start()
+
+    # Update progress
+    def upload_progress(chunk):
+        up_progress.update(up_progress.currval + chunk)
+
+    try:
+        # Start the download
+        source.download_file(source_bucket, file, file_path, 
+                             Callback=upload_progress)
+        
+        # When download is finished, update progress
+        up_progress.finish()
+        print("Download Successful")
+        return True
+    
+    # If the file is not found, print an error
+    except FileNotFoundError:
+        
+        print("The file was not found")
+        return False
+    
+    # If credentials arent setup, print an error
+    except NoCredentialsError:
+
+        print("Credentials not available")
+        return False
+
 def progress_download(source,source_bucket,file,file_path):
     
     # Get the object
@@ -83,4 +129,5 @@ def transfer(source, destination, source_bucket, destination_bucket):
             progress_download(source,source_bucket,file,file_path)
             print("Uploading: {}".format(file))
             destination.upload_file((cache+file), destination_bucket, file)
+            delete_file(source, bucket['Name'], file)
             os.remove(cache+file)

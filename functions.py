@@ -10,38 +10,24 @@ def delete_file(client, bucket, key):
         Key=key
 )
 
-def progress_upload(source,cache,file,destination_bucket):
+def progress_upload(source,file,file_path,destination_bucket):
+    bucket_name = destination_bucket
+    file_name = file_path
+
+    statinfo = os.stat(file_path)
+
+    up_progress = progressbar.progressbar.ProgressBar(maxval=statinfo.st_size)
+
+    up_progress.start()
+
+    def upload_progress(chunk):
+        up_progress.update(up_progress.currval + chunk)
+
+    source.upload_file(file_name, bucket_name, file_path, Callback=upload_progress)
+
+    up_progress.finish()
 
 
-    #Progress bar
-    def updateProgressBar(size_uploaded, size_file, size_bar=50):
-        perc_uploaded = round(size_uploaded / size_file * 100)
-        progress = round(perc_uploaded / 100 * size_bar)
-
-        status_bar = f"-{'▒' * progress}{' ' * (size_bar - progress)}-"
-        status_count = f"[{size_uploaded}/{size_file}MB]"
-
-        print(f"\r{status_bar} | {status_count} | {perc_uploaded}%", end='')
-
-
-        file_name = file
-        file_stats = os.stat(file_name)
-        print(file_stats)
-        print(f'File Size in Bytes is {file_stats.st_size}')
-        print(f'File Size in MegaBytes is {file_stats.st_size / (1024 * 1024)}')
-        
-        
-        
-        file_size = file_stats.st_size / (1024 * 1024)
-        uploaded_size = 0
-        while uploaded_size < file_size:
-            uploaded_size += 1
-
-            updateProgressBar(uploaded_size, file_size)
-
-        print("\nDone!")
-
-    source.upload_file((cache+file), destination_bucket, file)
 
 
 def progress_download(source,source_bucket,file,file_path):
@@ -123,7 +109,7 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
             file_path = "{}{}".format(cache,file)
             progress_download(source,source_bucket,file,file_path)
             print("Uploading: {}".format(file))
-            progress_upload(destination, cache, file, destination_bucket)
+            progress_upload(destination, file, file_path, destination_bucket)
             if delete_source_files:
                 delete_file(source, bucket['Name'], file)
             os.remove(cache+file)

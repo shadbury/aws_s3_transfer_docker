@@ -72,3 +72,8 @@ s3_account_transfer --source web-nonprod --destination web-prod --source_bucket 
 ```
 docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest --source web-nonprod --destination web-prod --source_bucket my-source-bucket --destination_bucket my-destination-bucket
 ```
+
+
+The s3 transfer applicaion will show a progress bar that should continus to progress unless there is an issue.
+
+![Alt text]("./images/example.png")

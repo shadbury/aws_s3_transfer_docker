@@ -38,21 +38,37 @@ Once this is setup, you will need the following
 
 Once you have these, you can run the following.
 
-```s3_account_transfer -s <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name> -del <True|False>```
-```docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest -s <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name> -del <True|False>```
+```
+s3_account_transfer -s <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name> -del <True|False>
+```
+```
+docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest -s <source account profile> -d <destination account profile> -sb <source bucket name> -db <destination bucket name> -del <True|False>
+```
 
 or
 
-```s3_account_transfer --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name> --delete_files <True|False>```
+```
+s3_account_transfer --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name> --delete_files <True|False>
+```
 
-```docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name> --delete_files <True|False>```
+```
+docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest --source <source account profile> --destination <destination account profile> --source_bucket <source bucket name> --destination_bucket <destination bucket name> --delete_files <True|False>
+```
 
 ## Example
 
-```s3_account_transfer -s web-nonprod -d web-prod -sb my-source-bucket -db my-destination-bucket```
-```docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest -s web-nonprod -d web-prod -sb my-source-bucket -db my-destination-bucket```
+```
+s3_account_transfer -s web-nonprod -d web-prod -sb my-source-bucket -db my-destination-bucket
+```
+```
+docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest -s web-nonprod -d web-prod -sb my-source-bucket -db my-destination-bucket
+```
 
 or
 
-```s3_account_transfer --source web-nonprod --destination web-prod --source_bucket my-source-bucket --destination_bucket my-destination-bucket```
-```docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest --source web-nonprod --destination web-prod --source_bucket my-source-bucket --destination_bucket my-destination-bucket```
+```
+s3_account_transfer --source web-nonprod --destination web-prod --source_bucket my-source-bucket --destination_bucket my-destination-bucket
+```
+```
+docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest --source web-nonprod --destination web-prod --source_bucket my-source-bucket --destination_bucket my-destination-bucket
+```

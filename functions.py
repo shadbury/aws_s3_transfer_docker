@@ -77,14 +77,14 @@ def progress_download(source,source_bucket,file,file_path):
 
 
 # Get the boto3 s3 client for the content to be downloaded
-def get_download_client():
+def get_download_client(source):
     source = boto3.Session(profile_name='wellteqnib-prod')
     return source.client('s3')
 
 
 # Get the boto3 s3 client for the bucket to receive the content
-def get_upload_client():
-    source = boto3.Session(profile_name='default')
+def get_upload_client(destination):
+    source = boto3.Session(profile_name=destination)
     return source.client('s3')
 
 
@@ -95,10 +95,10 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
     cache = "/tmp/"
 
     # Setup the source client
-    source = get_download_client()
+    source = get_download_client(source)
 
     # Setup the destination client
-    destination = get_upload_client()
+    destination = get_upload_client(destination)
 
     # Grap bucket with list of objects
     bucket = source.list_objects(

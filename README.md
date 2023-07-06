@@ -76,4 +76,4 @@ docker run --rm -it -v ~/.aws:/root/.aws joelhutson/s3_account_transfer:latest -
 
 The s3 transfer applicaion will show a progress bar that should continus to progress unless there is an issue.
 
-![Alt text]("/images/example.png")
+![Alt text]("/../main/images/example.png?raw=true "Optional Title"")

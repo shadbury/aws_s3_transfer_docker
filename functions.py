@@ -6,11 +6,11 @@ from botocore.exceptions import NoCredentialsError
 
 # Delete file function
 
-def delete_file(client, bucket, key):
-    client.delete_object(
-        Bucket=bucket,
-        Key=key
-)
+# def delete_file(client, bucket, key):
+#     client.delete_object(
+#         Bucket=bucket,
+#         Key=key
+# )
 
 
 # Progress bar or file upload

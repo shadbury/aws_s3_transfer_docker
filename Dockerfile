@@ -6,7 +6,7 @@ RUN pip install boto3 progressbar
 
 WORKDIR /app
 
-COPY menu.py .
+COPY app.py .
 COPY functions.py .
 
-ENTRYPOINT ["python", "menu.py"]
+ENTRYPOINT ["python", "app.py"]

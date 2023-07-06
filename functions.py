@@ -12,6 +12,67 @@ def delete_file(client, bucket, key):
         Key=key
 )
 
+def list_buckets(client):
+    response = client.list_buckets()
+    return response
+
+
+def get_bucket_encryption(client, bucket):
+    response = client.get_bucket_encryption(
+        Bucket=bucket)
+    return response
+
+#enable encryption on bucket
+def encrypt_bucket(client, bucket, checksum, algorithm, 
+                   kmsmasterkeyid, bucketKeyEnabled):
+
+
+    if kmsmasterkeyid:
+        client.put_bucket_encryption(
+        Bucket=bucket,
+        ChecksumAlgorithm=checksum,
+        ServerSideEncryptionConfiguration={
+            'Rules': [
+                {
+                    'ApplyServerSideEncryptionByDefault': {
+                        'SSEAlgorithm': algorithm,
+                        'KMSMasterKeyID': kmsmasterkeyid
+                    },
+                    'BucketKeyEnabled': bucketKeyEnabled
+                },
+            ]
+        },
+    )
+    else:
+        client.put_bucket_encryption(
+        Bucket=bucket,
+        ChecksumAlgorithm=checksum,
+        ServerSideEncryptionConfiguration={
+            'Rules': [
+                {
+                    'ApplyServerSideEncryptionByDefault': {
+                        'SSEAlgorithm': algorithm,
+                    },
+                    'BucketKeyEnabled': bucketKeyEnabled
+                },
+            ]
+        },
+    )
+
+# return a boolean value if versioning is successful 
+def backup_mode(source, source_bucket):
+
+    try:
+        source.put_bucket_versioning(
+            Bucket=source_bucket
+        )
+
+        return True
+    
+
+    except:
+
+        return False
 
 # Progress bar or file upload
 def progress_upload(destination,file_path,destination_bucket):
@@ -129,9 +190,9 @@ def transfer(source, destination, source_bucket, destination_bucket, delete_sour
             progress_upload(destination, file_path, destination_bucket)
 
             # if the delete source files option was true. delete the file from the source s3 bucket
-            if delete_source_files:
-                print("deleting file from source bucket: {}".format(file))
-                delete_file(source, bucket['Name'], file)
+            # if delete_source_files:
+                # print("deleting file from source bucket: {}".format(file))
+                # delete_file(source, bucket['Name'], file)
 
             # remove files from cache after upload is complete
             print("deleting file from cache: {}".format(file))

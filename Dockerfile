@@ -8,5 +8,6 @@ WORKDIR /app
 
 COPY app.py .
 COPY functions.py .
+COPY gui.py .
 
 ENTRYPOINT ["python", "gui.py"]

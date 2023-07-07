@@ -6,6 +6,8 @@ from botocore.exceptions import NoCredentialsError
 import traceback
 import progressbar
 from tkinter import messagebox
+import tempfile
+import shutil
 
 
 
@@ -75,44 +77,58 @@ def backup_mode(source, source_bucket):
         return False
 
 
-def progress_upload(destination, file_path, destination_bucket, progress_var, remaining_var):
+def progress_upload(destination, file_path, destination_bucket, file_name, progress_var):
     statinfo = os.stat(file_path)
     total_size = statinfo.st_size
 
     def upload_progress(chunk):
         progress = int((chunk / total_size) * 100)
         progress_var.set(progress)
-        remaining = 100 - progress
-        remaining_var.set(remaining)
 
-    destination.upload_file(file_path, destination_bucket, file_path, Callback=upload_progress)
+    destination.upload_file(file_path, destination_bucket, file_name, Callback=upload_progress)
 
 
-def progress_download(source, source_bucket, file, file_path, progress_var):
-    total_bytes = source.head_object(Bucket=source_bucket, Key=file)["ContentLength"]
-    bytes_transferred = 0
 
-    def download_progress(chunk):
-        nonlocal bytes_transferred
-        bytes_transferred += len(chunk)
-        progress = int((bytes_transferred / total_bytes) * 100)
-        progress_var.set(progress)
 
-    storage_class = source.head_object(Bucket=source_bucket, Key=file)["StorageClass"]
+def progress_download(source_client, source_bucket, file, file_path, progress_var):
+    try:
+        response = source_client.head_object(Bucket=source_bucket, Key=file)
+        storage_class = response.get('StorageClass')
 
-    if storage_class in ["STANDARD", "INTELLIGENT_TIERING", "ONEZONE_IA"]:
-        source.download_file(source_bucket, file, file_path, Callback=download_progress)
-    else:
-        with open(file_path, "wb") as f:
-            response = source.get_object(Bucket=source_bucket, Key=file)
-            body = response["Body"]
-            chunk_size = 1024 * 1024  # 1 MB chunk size
-            while True:
-                chunk = body.read(chunk_size)
-                if not chunk:
-                    break
-                f.write(chunk)
-                download_progress(chunk)
+        if storage_class == 'GLACIER':
+            # If the object is in Glacier storage class, initiate a restore request
+            response = source_client.restore_object(
+                Bucket=source_bucket,
+                Key=file,
+                RestoreRequest={'Days': 7}
+            )
+            print(f"Initiated restore request for object {file}")
+            return
+
+        # Extract the file name from the object key
+        file_name = os.path.basename(file)
+
+        # Check if the file already exists and delete it if it does
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Create the directory structure if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Download the object
+        try:
+            source_client.download_file(
+                Bucket=source_bucket,
+                Key=file,
+                Filename=file_path,
+                Callback=lambda bytes_transferred: progress_var.set(bytes_transferred)
+            )
+            print(f"Downloaded file: {file_path}")
+        except Exception as e:
+            print(f"Error occurred during file download: {e}")
+    except Exception as e:
+        print(f"Error occurred while getting object information: {e}")
+
 
 
 def get_download_client(source):
@@ -125,56 +141,71 @@ def get_upload_client(destination):
     return session.client('s3')
 
 
+# Setup logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+
+
+
 def transfer_files(source_profile, destination_profile, source_bucket, destination_bucket, delete_files, progress_var, remaining_var):
-    setup_logging()
-    logger = logging.getLogger(__name__)
-    logger.info("Starting transfer_files")
+    # Create Boto3 clients for the source and destination profiles
+    source_session = boto3.Session(profile_name=source_profile)
+    destination_session = boto3.Session(profile_name=destination_profile)
+    source_client = source_session.client('s3')
+    destination_client = destination_session.client('s3')
+
+    # Get the list of objects in the source bucket
+    response = source_client.list_objects_v2(Bucket=source_bucket)
+    objects = response['Contents']
+
+    # Calculate the total number of objects for progress tracking
+    total_objects = len(objects)
+    processed_objects = 0
+
+    # Create a temporary directory for file downloads
+    temp_directory = os.path.join('/tmp/proj_temp', source_bucket)
 
     try:
-        cache = "/tmp/"
-        source_session = boto3.Session(profile_name=source_profile)
-        destination_session = boto3.Session(profile_name=destination_profile)
+        for obj in objects:
+            # Get the object key
+            file_key = obj['Key']
 
-        source_client = source_session.client('s3')
-        destination_client = destination_session.client('s3')
+            # Create the destination file path
+            file_path = os.path.join(temp_directory, file_key)
 
-        logger.info("Getting source bucket contents")
-        paginator = source_client.get_paginator('list_objects_v2')
-        response_iterator = paginator.paginate(Bucket=source_bucket)
+            # Download the object from the source bucket
+            try:
+                progress_download(source_client, source_bucket, file_key, file_path, progress_var)
+                print(f"Downloaded object: {file_key}")
+            except Exception as e:
+                print(f"Error occurred during file download: {e}")
+                continue
 
-        total_files = []
-        for response in response_iterator:
-            if 'Contents' in response:
-                total_files.extend([obj['Key'] for obj in response['Contents']])
+            # Upload the downloaded object to the destination bucket
+            try:
+                file_name = os.path.basename(file_key)
+                destination_key = os.path.join(os.path.dirname(file_key), file_name)  # Include directory structure
+                progress_upload(destination_client, file_path, destination_bucket, destination_key, progress_var)
+                print(f"Uploaded object: {file_key}")
+            except Exception as e:
+                print(f"Error occurred during file upload: {e}")
+                continue
 
-        total_progress = len(total_files)
-        current_progress = 0
+            processed_objects += 1
+            remaining_objects = total_objects - processed_objects
+            remaining_var.set(remaining_objects)
 
-        logger.info("Starting file transfer")
-        for file in total_files:
-            current_progress += 1
-            progress_var.set(current_progress)
-            remaining = 100 - ((current_progress / total_progress) * 100)
-            remaining_var.set(remaining)
-
-            logger.info(f"Transferring file: {file}")
-            file_path = os.path.join(cache, file)
-
-            progress_download(source_client, source_bucket, file, file_path, progress_var)
-
-            destination_client.upload_file(file_path, destination_bucket, file)
-
+            # Delete the downloaded file if specified
             if delete_files:
-                logger.info(f"Deleting file from source bucket: {file}")
-                source_client.delete_object(Bucket=source_bucket, Key=file)
+                try:
+                    os.remove(file_path)
+                    print(f"Deleted file: {file_key}")
+                except Exception as e:
+                    print(f"Error occurred while deleting file: {e}")
 
-            os.remove(file_path)
+    finally:
+        # Remove the temporary directory
+        shutil.rmtree(temp_directory)
 
-        logger.info("File transfer complete")
-
-    except Exception as e:
-        logger.error("An error occurred during file transfer:")
-        logger.error(str(e))
-        logger.error(traceback.format_exc())
-
-    logger.info("Finished transfer_files")

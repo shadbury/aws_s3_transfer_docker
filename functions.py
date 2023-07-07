@@ -197,13 +197,20 @@ def transfer_files(source_profile, destination_profile, source_bucket, destinati
             remaining_objects = total_objects - processed_objects
             remaining_var.set(remaining_objects)
 
-            # Delete the downloaded file if specified
+            # Delete the source object if specified
             if delete_files:
                 try:
-                    os.remove(file_path)
-                    print(f"Deleted file: {file_key}")
+                    source_client.delete_object(Bucket=source_bucket, Key=file_key)
+                    print(f"Deleted object: {file_key}")
                 except Exception as e:
-                    print(f"Error occurred while deleting file: {e}")
+                    print(f"Error occurred while deleting object: {e}")
+
+            # Delete the downloaded file if specified
+            try:
+                os.remove(file_path)
+                print(f"Deleted file: {file_key}")
+            except Exception as e:
+                print(f"Error occurred while deleting file: {e}")
 
     finally:
         # Remove the temporary directory

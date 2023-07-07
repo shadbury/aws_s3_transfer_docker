@@ -1,199 +1,180 @@
-import boto3
 import os
-import progressbar
+import time
+import logging
+import boto3
 from botocore.exceptions import NoCredentialsError
+import traceback
+import progressbar
+from tkinter import messagebox
 
 
-# Delete file function
+
+def setup_logging():
+    log_format = "%(asctime)s - %(levelname)s - %(message)s"
+    logging.basicConfig(filename='transfer.log', level=logging.INFO, format=log_format)
+
 
 def delete_file(client, bucket, key):
-    client.delete_object(
-        Bucket=bucket,
-        Key=key
-)
+    client.delete_object(Bucket=bucket, Key=key)
 
-def list_buckets(client):
+
+def list_buckets(profile):
+    session = boto3.Session(profile_name=profile)
+    client = session.client('s3')
     response = client.list_buckets()
-    return response
+    buckets = [bucket['Name'] for bucket in response['Buckets']]
+    return buckets
 
 
 def get_bucket_encryption(client, bucket):
-    response = client.get_bucket_encryption(
-        Bucket=bucket)
+    response = client.get_bucket_encryption(Bucket=bucket)
     return response
 
-#enable encryption on bucket
-def encrypt_bucket(client, bucket, checksum, algorithm, 
-                   kmsmasterkeyid, bucketKeyEnabled):
 
-
+def encrypt_bucket(client, bucket, checksum, algorithm, kmsmasterkeyid, bucketKeyEnabled):
     if kmsmasterkeyid:
         client.put_bucket_encryption(
-        Bucket=bucket,
-        ChecksumAlgorithm=checksum,
-        ServerSideEncryptionConfiguration={
-            'Rules': [
-                {
-                    'ApplyServerSideEncryptionByDefault': {
-                        'SSEAlgorithm': algorithm,
-                        'KMSMasterKeyID': kmsmasterkeyid
+            Bucket=bucket,
+            ChecksumAlgorithm=checksum,
+            ServerSideEncryptionConfiguration={
+                'Rules': [
+                    {
+                        'ApplyServerSideEncryptionByDefault': {
+                            'SSEAlgorithm': algorithm,
+                            'KMSMasterKeyID': kmsmasterkeyid
+                        },
+                        'BucketKeyEnabled': bucketKeyEnabled
                     },
-                    'BucketKeyEnabled': bucketKeyEnabled
-                },
-            ]
-        },
-    )
+                ]
+            }
+        )
     else:
         client.put_bucket_encryption(
-        Bucket=bucket,
-        ChecksumAlgorithm=checksum,
-        ServerSideEncryptionConfiguration={
-            'Rules': [
-                {
-                    'ApplyServerSideEncryptionByDefault': {
-                        'SSEAlgorithm': algorithm,
+            Bucket=bucket,
+            ChecksumAlgorithm=checksum,
+            ServerSideEncryptionConfiguration={
+                'Rules': [
+                    {
+                        'ApplyServerSideEncryptionByDefault': {
+                            'SSEAlgorithm': algorithm,
+                        },
+                        'BucketKeyEnabled': bucketKeyEnabled
                     },
-                    'BucketKeyEnabled': bucketKeyEnabled
-                },
-            ]
-        },
-    )
+                ]
+            }
+        )
 
-# return a boolean value if versioning is successful 
+
 def backup_mode(source, source_bucket):
-
     try:
         source.put_bucket_versioning(
             Bucket=source_bucket
         )
-
         return True
-    
-
     except:
-
         return False
 
-# Progress bar or file upload
-def progress_upload(destination,file_path,destination_bucket):
 
-    # get metadata infomation about current file
+def progress_upload(destination, file_path, destination_bucket, progress_var, remaining_var):
     statinfo = os.stat(file_path)
+    total_size = statinfo.st_size
 
-    # initialize progress bad
-    up_progress = progressbar.progressbar.ProgressBar(maxval=statinfo.st_size)
-    up_progress.start()
-
-    # Update progress bad
     def upload_progress(chunk):
-        up_progress.update(up_progress.currval + chunk)
+        progress = int((chunk / total_size) * 100)
+        progress_var.set(progress)
+        remaining = 100 - progress
+        remaining_var.set(remaining)
 
-    # updoad file
     destination.upload_file(file_path, destination_bucket, file_path, Callback=upload_progress)
 
-    # upload finished
-    up_progress.finish()
+
+def progress_download(source, source_bucket, file, file_path, progress_var):
+    total_bytes = source.head_object(Bucket=source_bucket, Key=file)["ContentLength"]
+    bytes_transferred = 0
+
+    def download_progress(chunk):
+        nonlocal bytes_transferred
+        bytes_transferred += len(chunk)
+        progress = int((bytes_transferred / total_bytes) * 100)
+        progress_var.set(progress)
+
+    storage_class = source.head_object(Bucket=source_bucket, Key=file)["StorageClass"]
+
+    if storage_class in ["STANDARD", "INTELLIGENT_TIERING", "ONEZONE_IA"]:
+        source.download_file(source_bucket, file, file_path, Callback=download_progress)
+    else:
+        with open(file_path, "wb") as f:
+            response = source.get_object(Bucket=source_bucket, Key=file)
+            body = response["Body"]
+            chunk_size = 1024 * 1024  # 1 MB chunk size
+            while True:
+                chunk = body.read(chunk_size)
+                if not chunk:
+                    break
+                f.write(chunk)
+                download_progress(chunk)
 
 
+def get_download_client(source):
+    session = boto3.Session(profile_name=source)
+    return session.client('s3')
 
 
-def progress_download(source,source_bucket,file,file_path):
-    
-    # Get the object
-    response = source.head_object(Bucket=source_bucket, Key=file)
-    
-    # Get the size of the file
-    size = response['ContentLength']
+def get_upload_client(destination):
+    session = boto3.Session(profile_name=destination)
+    return session.client('s3')
 
-    #initialize the progress bar
-    up_progress = progressbar.progressbar.ProgressBar(maxval=size)
-    up_progress.start()
 
-    # Update progress
-    def upload_progress(chunk):
-        up_progress.update(up_progress.currval + chunk)
+def transfer_files(source_profile, destination_profile, source_bucket, destination_bucket, delete_files, progress_var, remaining_var):
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info("Starting transfer_files")
 
     try:
-        # Start the download
-        source.download_file(source_bucket, file, file_path, 
-                             Callback=upload_progress)
-        
-        # When download is finished, update progress
-        up_progress.finish()
-        print("Download Successful")
-        return True
-    
-    # If the file is not found, print an error
-    except FileNotFoundError:
-        
-        print("The file was not found")
-        return False
-    
-    # If credentials arent setup, print an error
-    except NoCredentialsError:
+        cache = "/tmp/"
+        source_session = boto3.Session(profile_name=source_profile)
+        destination_session = boto3.Session(profile_name=destination_profile)
 
-        print("Credentials not available")
-        return False
+        source_client = source_session.client('s3')
+        destination_client = destination_session.client('s3')
 
+        logger.info("Getting source bucket contents")
+        paginator = source_client.get_paginator('list_objects_v2')
+        response_iterator = paginator.paginate(Bucket=source_bucket)
 
+        total_files = []
+        for response in response_iterator:
+            if 'Contents' in response:
+                total_files.extend([obj['Key'] for obj in response['Contents']])
 
-# Get the boto3 s3 client for the content to be downloaded
-def get_download_client(source):
-    source = boto3.Session(profile_name=source)
-    return source.client('s3')
+        total_progress = len(total_files)
+        current_progress = 0
 
+        logger.info("Starting file transfer")
+        for file in total_files:
+            current_progress += 1
+            progress_var.set(current_progress)
+            remaining = 100 - ((current_progress / total_progress) * 100)
+            remaining_var.set(remaining)
 
-# Get the boto3 s3 client for the bucket to receive the content
-def get_upload_client(destination):
-    source = boto3.Session(profile_name=destination)
-    return source.client('s3')
+            logger.info(f"Transferring file: {file}")
+            file_path = os.path.join(cache, file)
 
+            progress_download(source_client, source_bucket, file, file_path, progress_var)
 
-# Create the transfer process
-def transfer(source, destination, source_bucket, destination_bucket, delete_source_files):
+            destination_client.upload_file(file_path, destination_bucket, file)
 
-    # Temp location to store files for transfer
-    cache = "/tmp/"
+            if delete_files:
+                logger.info(f"Deleting file from source bucket: {file}")
+                source_client.delete_object(Bucket=source_bucket, Key=file)
 
-    # Setup the source client
-    source = get_download_client(source)
+            os.remove(file_path)
 
-    # Setup the destination client
-    destination = get_upload_client(destination)
+        logger.info("File transfer complete")
 
-    # Grap bucket with list of objects
-    bucket = source.list_objects(
-        Bucket=source_bucket
-    )
+    except Exception as e:
+        logger.error("An error occurred during file transfer:")
+        logger.error(str(e))
+        logger.error(traceback.format_exc())
 
-    # Get the name values of the files in the cache directory
-    for value in bucket['Contents']:
-        file = value['Key']
-
-        # If the current file name doesn't exist, proceed.
-        if file not in cache:
-
-            # get the file path
-            file_path = "{}{}".format(cache,file)
-
-
-            # display to use the the application is about to attempt to download an object from the source s3 bucket
-            print("Downloading: {}".format(file))
-
-            # start the download process
-            progress_download(source,source_bucket,file,file_path)
-
-            # display to use the the application is about to attempt to upload an object to the destination s3 bucket
-            print("Uploading: {}".format(file))
-
-            # start the upload process
-            progress_upload(destination, file_path, destination_bucket)
-
-            # if the delete source files option was true. delete the file from the source s3 bucket
-            # if delete_source_files:
-                # print("deleting file from source bucket: {}".format(file))
-                # delete_file(source, bucket['Name'], file)
-
-            # remove files from cache after upload is complete
-            print("deleting file from cache: {}".format(file))
-            os.remove(cache+file)
+    logger.info("Finished transfer_files")

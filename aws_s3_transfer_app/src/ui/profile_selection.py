@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from autocomplete import AutocompleteCombobox
 from aws import get_profiles
+from ui.autocomplete import AutocompleteCombobox
 
 class ProfileSelection(tk.Frame):
     def __init__(self, master, *args, **kwargs):
@@ -26,7 +26,3 @@ class ProfileSelection(tk.Frame):
         profiles = get_profiles()
         self.source_profile_entry.set_completion_list(profiles)
         self.destination_profile_entry.set_completion_list(profiles)
-
-        # Set the initial values for the dropdowns
-        self.source_profile_entry.set('')
-        self.destination_profile_entry.set('')

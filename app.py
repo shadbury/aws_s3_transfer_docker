@@ -1,6 +1,8 @@
-from gui import S3TransferApp
+import tkinter as tk
+from s3_transfer_app import S3TransferApp
 
 if __name__ == "__main__":
-    app = S3TransferApp()
-    app.profile_selection.update_profiles()  # Call the update_profiles method to populate the drop-downs
-    app.mainloop()
+    root = tk.Tk()
+    app = S3TransferApp(root)
+    app.pack()
+    root.mainloop()

@@ -1,56 +1,30 @@
 import os
-import configparser
-import boto3
+from configparser import ConfigParser
 
+def get_profiles():
+    config = ConfigParser()
+    aws_folder = os.path.expanduser("~/.aws")
+    config_files = [
+        os.path.join(aws_folder, "config"),
+        os.path.join(aws_folder, "credentials")
+    ]
+    config.read(config_files)
 
-class AWS:
-    @staticmethod
-    def get_config_profiles():
-        config_file = os.path.expanduser("~/.aws/config")
-        if os.path.exists(config_file):
-            config = configparser.ConfigParser()
-            config.read(config_file)
-            profiles = config.sections()
-            return profiles
-        return []
+    # Retrieve profiles from the [profile <name>] sections in the config file
+    profiles = []
+    for section in config.sections():
+        if section.startswith("profile "):
+            profile_name = section.split(" ")[1]
+            profiles.append(profile_name)
 
-    @staticmethod
-    def get_credentials_profiles():
-        credentials_file = os.path.expanduser("~/.aws/credentials")
-        if os.path.exists(credentials_file):
-            config = configparser.ConfigParser()
-            config.read(credentials_file)
-            profiles = config.sections()
-            return profiles
-        return []
+    # Retrieve profiles from the [profile <name>] sections in the credentials file
+    credentials_profiles = config.sections()
+    for profile in credentials_profiles:
+        if profile not in profiles:
+            profiles.append(profile)
 
-    @staticmethod
-    def get_bucket_list(profile):
-        session = boto3.Session(profile_name=profile)
-        s3_client = session.client("s3")
-        response = s3_client.list_buckets()
-        bucket_list = [bucket["Name"] for bucket in response.get("Buckets", [])]
-        return bucket_list
+    # Retrieve the 'default' profile if it exists
+    if 'default' in config:
+        profiles.append('default')
 
-    @staticmethod
-    def is_bucket_encrypted(profile, bucket):
-        session = boto3.Session(profile_name=profile)
-        s3_client = session.client("s3")
-        response = s3_client.get_bucket_encryption(Bucket=bucket)
-        encryption_rules = response.get("ServerSideEncryptionConfiguration", {}).get("Rules", [])
-        return len(encryption_rules) > 0
-
-    @staticmethod
-    def encrypt_bucket(profile, bucket):
-        session = boto3.Session(profile_name=profile)
-        s3_client = session.client("s3")
-        encryption_configuration = {
-            "Rules": [
-                {
-                    "ApplyServerSideEncryptionByDefault": {
-                        "SSEAlgorithm": "AES256"
-                    }
-                }
-            ]
-        }
-        s3_client.put_bucket_encryption(Bucket=bucket, ServerSideEncryptionConfiguration=encryption_configuration)
+    return profiles

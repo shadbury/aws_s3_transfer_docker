@@ -12,7 +12,8 @@ def encrypt_aes256(data):
 def encrypt_kms(data):
     # Encrypt data using KMS algorithm
     # Replace the placeholders with your encryption logic using KMS
-    kms_client = boto3.client('kms')
+    session = boto3.Session()
+    kms_client = session.client('kms')
     response = kms_client.encrypt(
         KeyId='arn:aws:kms:us-west-2:123456789012:key/your-key-id',
         Plaintext=data.encode()

@@ -1,8 +1,8 @@
 import tkinter as tk
-from profile_selection import ProfileSelection
-from transfer_options import TransferOptions
-from terminal import Terminal
-
+from ui.profile_selection import ProfileSelection
+from ui.transfer_options import TransferOptions
+from ui.terminal import Terminal, TextWidgetHandler
+import logging
 
 class S3TransferApp(tk.Frame):
     def __init__(self, parent):
@@ -19,18 +19,20 @@ class S3TransferApp(tk.Frame):
 
         self.profile_selection.bind("<<ProfileSelectionChanged>>", self.update_transfer_options)
 
-    def update_profiles(self):
-        config_path = os.path.expanduser("~/.aws/config")
-        credentials_path = os.path.expanduser("~/.aws/credentials")
+        self.configure_logging()
 
-        profiles = get_config_profiles(config_path) + get_credentials_profiles(credentials_path)
-        self.source_profile_entry.set_completion_list(profiles)
-        self.destination_profile_entry.set_completion_list(profiles)
+    def configure_logging(self):
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+        logger.addHandler(TextWidgetHandler(self.terminal))
 
     def update_transfer_options(self, event=None):
-        self.transfer_options.update_buckets()
+        source_profile = self.profile_selection.source_profile_entry.get()
+        self.transfer_options.update_buckets(source_profile)
 
 
-
-    def run(self):
-        self.parent.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = S3TransferApp(root)
+    app.pack()
+    root.mainloop()

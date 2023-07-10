@@ -68,6 +68,3 @@ Feel free to contribute to the project by submitting bug reports, feature reques
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
----
-
-That's it! The README file provides an overview of the app, instructions on running it locally, creating a Docker image, and contributing to the project. Feel free to modify it according to your needs and add any additional information.

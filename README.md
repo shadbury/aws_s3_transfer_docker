@@ -1,6 +1,4 @@
-Certainly! Here's a README file that provides instructions on how to use the app, including the folder structure, how it works, and creating a Docker image.
 
-**README.md**
 
 # S3 Transfer App
 

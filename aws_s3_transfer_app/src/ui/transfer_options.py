@@ -1,46 +1,67 @@
 import tkinter as tk
 from tkinter import ttk
-from aws import get_buckets, transfer_files
-from ui.autocomplete import AutocompleteCombobox
+from src.aws import get_profiles  # Import get_profiles directly
 
 class TransferOptions(tk.Frame):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-        self.master = master
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
 
-        self.source_bucket_label = ttk.Label(self, text="Source Bucket:")
-        self.source_bucket_label.grid(row=0, column=0, sticky="w")
+        # Create source and destination profile selection dropdowns
+        self.source_profile_label = tk.Label(self, text="Source Profile:")
+        self.source_profile_dropdown = CustomDropdown(self)
 
-        self.source_bucket_entry = AutocompleteCombobox(self)
-        self.source_bucket_entry.grid(row=0, column=1, sticky="we")
+        self.destination_profile_label = tk.Label(self, text="Destination Profile:")
+        self.destination_profile_dropdown = CustomDropdown(self)
 
-        self.destination_bucket_label = ttk.Label(self, text="Destination Bucket:")
-        self.destination_bucket_label.grid(row=1, column=0, sticky="w")
+        # Place the widgets using grid layout
+        self.source_profile_label.grid(row=0, column=0, sticky="e")
+        self.source_profile_dropdown.grid(row=0, column=1, padx=10)
+        self.destination_profile_label.grid(row=1, column=0, sticky="e")
+        self.destination_profile_dropdown.grid(row=1, column=1, padx=10)
 
-        self.destination_bucket_entry = AutocompleteCombobox(self)
-        self.destination_bucket_entry.grid(row=1, column=1, sticky="we")
+        # Update profiles initially
+        self.update_profiles()
 
-        self.source_profile = None
-        self.destination_profile = None
+    def update_profiles(self):
+        config_profiles = get_profiles("config")
+        credential_profiles = get_profiles("credentials")
 
-    def update_buckets(self, source_profile):
-        self.source_profile = source_profile
-        buckets = get_buckets(source_profile)
-        self.source_bucket_entry.set_completion_list(buckets)
+        for profile in config_profiles:
+            if isinstance(profile, str):
+                profile_name = profile.replace('Profile ', '')
+            else:
+                profile_name = profile.get('name', '').replace('Profile ', '')
+            self.source_profile_dropdown.add_option(profile_name, tag="Config")
+            self.destination_profile_dropdown.add_option(profile_name, tag="Config")
 
-    def transfer(self):
-        source_bucket = self.source_bucket_entry.get()
-        destination_bucket = self.destination_bucket_entry.get()
-        encrypt_source = self.encrypt_source_var.get()
-        encrypt_destination = self.encrypt_destination_var.get()
-        encryption_algorithm = self.encryption_algorithm_entry.get()
+        for profile in credential_profiles:
+            self.source_profile_dropdown.add_option(profile, tag="Cred")
+            self.destination_profile_dropdown.add_option(profile, tag="Cred")
 
-        transfer_files(
-            self.source_profile,
-            self.destination_profile,
-            source_bucket,
-            destination_bucket,
-            encrypt_source,
-            encrypt_destination,
-            encryption_algorithm
-        )
+class CustomDropdown(ttk.Combobox):
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+        self.tag_style = ttk.Style()
+        self.tag_style.configure("Config.TCombobox",
+                                 background="#EAEAEA",  # Set gray background color
+                                 padding=4,  # Add padding to create a bubble appearance
+                                 borderwidth=1,
+                                 relief="solid",
+                                 foreground="blue")
+        self.tag_style.configure("Cred.TCombobox",
+                                 background="#EAEAEA",
+                                 padding=4,
+                                 borderwidth=1,
+                                 relief="solid",
+                                 foreground="green")
+        self["style"] = "TCombobox"
+
+    def add_option(self, text, tag):
+        self.tag_style.configure(f"{tag}.TCombobox",
+                                 background="#EAEAEA",
+                                 padding=4,
+                                 borderwidth=1,
+                                 relief="solid",
+                                 foreground="blue" if tag == "Config" else "green")
+        self["values"] = tuple(list(self["values"]) + [(text, tag)])

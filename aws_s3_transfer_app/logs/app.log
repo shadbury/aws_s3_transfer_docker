@@ -1,0 +1,104 @@
+2023-07-11 01:05:25,878 - INFO - Logging configured
+2023-07-11 01:05:25,876 - INFO - Logging configured
+2023-07-11 01:10:12,900 - INFO - Logging configured
+2023-07-11 01:10:12,898 - INFO - Logging configured
+2023-07-11 01:12:29,597 - INFO - Logging configured
+2023-07-11 01:12:29,594 - INFO - Logging configured
+2023-07-11 01:12:41,922 - INFO - Logging configured
+2023-07-11 01:12:41,920 - INFO - Logging configured
+2023-07-11 01:12:41,937 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 13, in __init__
+    self.source_profile_dropdown = CustomDropdown(
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 62, in __init__
+    super().__init__(parent, textvariable=self.selected_option, **kwargs)
+TypeError: tkinter.Entry.__init__() got multiple values for keyword argument 'textvariable'
+2023-07-11 01:12:47,310 - INFO - Logging configured
+2023-07-11 01:12:47,308 - INFO - Logging configured
+2023-07-11 01:12:57,517 - INFO - Logging configured
+2023-07-11 01:12:57,515 - INFO - Logging configured
+2023-07-11 01:12:57,543 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 24, in __init__
+    self.update_profiles()
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 35, in update_profiles
+    self.source_profile_dropdown.add_option(profile_name, tag="Config")
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 60, in add_option
+    self.tag_bind(tag, "<<ComboboxSelected>>", lambda event: self.configure(style=f"{tag}.TCombobox"))
+AttributeError: 'CustomDropdown' object has no attribute 'tag_bind'
+2023-07-11 01:13:01,959 - INFO - Logging configured
+2023-07-11 01:13:01,957 - INFO - Logging configured
+2023-07-11 01:13:01,985 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 24, in __init__
+    self.update_profiles()
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 35, in update_profiles
+    self.source_profile_dropdown.add_option(profile_name, tag="Config")
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 60, in add_option
+    self.tag_configure(tag, style=f"{tag}.TCombobox")
+AttributeError: 'CustomDropdown' object has no attribute 'tag_configure'
+2023-07-11 01:13:05,772 - INFO - Logging configured
+2023-07-11 01:13:05,769 - INFO - Logging configured
+2023-07-11 01:13:05,796 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 24, in __init__
+    self.update_profiles()
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 35, in update_profiles
+    self.source_profile_dropdown.add_option(profile_name, tag="Config")
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 60, in add_option
+    self.tag_add(tag, last_index, last_index)
+AttributeError: 'CustomDropdown' object has no attribute 'tag_add'
+2023-07-11 01:13:09,643 - INFO - Logging configured
+2023-07-11 01:13:09,641 - INFO - Logging configured
+2023-07-11 01:13:21,034 - INFO - Logging configured
+2023-07-11 01:13:21,032 - INFO - Logging configured
+2023-07-11 01:13:21,060 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 24, in __init__
+    self.update_profiles()
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 35, in update_profiles
+    self.source_profile_dropdown.add_option(profile_name, tag="Config")
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 56, in add_option
+    self['values'] += [f"{text} ({tag})"]  # Use list concatenation instead of tuple concatenation
+TypeError: can only concatenate str (not "list") to str
+2023-07-11 01:13:27,002 - INFO - Logging configured
+2023-07-11 01:13:27,000 - INFO - Logging configured
+2023-07-11 01:13:27,029 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 44, in <module>
+    app = S3TransferApp(root)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/app.py", line 14, in __init__
+    self.transfer_options = TransferOptions(self)
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 24, in __init__
+    self.update_profiles()
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 35, in update_profiles
+    self.source_profile_dropdown.add_option(profile_name, tag="Config")
+  File "/Users/joelhutson/Projects/aws_s3_transfer_docker/aws_s3_transfer_app/src/ui/transfer_options.py", line 56, in add_option
+    self['values'] += (f"{text} ({tag})",)
+TypeError: can only concatenate str (not "tuple") to str
+2023-07-11 01:13:31,071 - INFO - Logging configured
+2023-07-11 01:13:31,069 - INFO - Logging configured
+2023-07-11 01:14:06,904 - INFO - Logging configured
+2023-07-11 01:14:06,902 - INFO - Logging configured
+2023-07-11 01:14:41,096 - INFO - Logging configured
+2023-07-11 01:14:41,094 - INFO - Logging configured

@@ -1,19 +1,21 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
+FROM python:3.9
 
-# Set the working directory in the container
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    tk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the required files to the container
-COPY requirements.txt /app
-COPY app.py /app
-COPY src /app/src
+# Copy the application files to the container
+COPY . /app
 
-# Install the dependencies
+# Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port on which the app will run (adjust if necessary)
-EXPOSE 8000
+# Set the environment variable for X11 forwarding
+ENV DISPLAY=:0
 
-# Set the entrypoint command
-CMD ["python", "app.py"]
+# Run the application
+CMD [ "python", "app.py" ]

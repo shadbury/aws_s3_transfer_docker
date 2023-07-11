@@ -21,7 +21,6 @@ s3_transfer_app/
 │   ├── transfer_options.py
 │   └── terminal.py
 ├── app.py
-├── Dockerfile
 ├── requirements.txt
 └── README.md
 ```
@@ -50,15 +49,6 @@ To run the app locally, follow these steps:
 4. Run the app: `python app.py`
 5. The app window should open, and you can start using the S3 Transfer App.
 
-## Docker Image
-
-To create a Docker image for the app, follow these steps:
-
-1. Build the Docker image: `docker build -t s3_transfer_app .`
-2. Run the Docker container: `docker run -d -p 8000:8000 s3_transfer_app`
-3. Access the app in your web browser at `http://localhost:8000`.
-
-Note: The `-p` flag in the `docker run` command maps the container's port 8000 to the host's port 8000. Adjust the port number as needed.
 
 ## Contribution
 

@@ -1,6 +1,9 @@
 FROM python:3.9
 
-# Install XQuartz
+# Import missing GPG keys
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
+
+# Install XQuartz and other dependencies
 RUN echo "deb http://security.ubuntu.com/ubuntu xenial-security main" >> /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y x11-apps \

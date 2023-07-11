@@ -10,9 +10,6 @@ RUN echo "deb http://security.ubuntu.com/ubuntu xenial-security main" >> /etc/ap
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install other dependencies
-RUN apt-get update && apt-get install -y <other-dependencies>
-
 # Set up the app
 WORKDIR /app
 COPY . /app
@@ -24,4 +21,4 @@ RUN pip install -r requirements.txt
 ENV DISPLAY=:0
 
 # Set the entrypoint
-ENTRYPOINT ["/app/app.py"]
+CMD ["python", "app.py"]

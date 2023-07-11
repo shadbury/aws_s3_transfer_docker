@@ -1,21 +1,24 @@
 FROM python:3.9
 
-# Install required dependencies
-RUN apt-get update && apt-get install -y \
-    tk \
+# Install XQuartz
+RUN echo "deb http://security.ubuntu.com/ubuntu xenial-security main" >> /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y x11-apps \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /app
+# Install other dependencies
+RUN apt-get update && apt-get install -y <other-dependencies>
 
-# Copy the application files to the container
+# Set up the app
+WORKDIR /app
 COPY . /app
 
-# Install the Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install -r requirements.txt
 
-# Set the environment variable for X11 forwarding
+# Set the display environment variable
 ENV DISPLAY=:0
 
-# Run the application
-CMD [ "python", "app.py" ]
+# Set the entrypoint
+ENTRYPOINT ["/app/gui.py"]

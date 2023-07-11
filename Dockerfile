@@ -24,4 +24,4 @@ RUN pip install -r requirements.txt
 ENV DISPLAY=:0
 
 # Set the entrypoint
-ENTRYPOINT ["/app/gui.py"]
+ENTRYPOINT ["/app/app.py"]
